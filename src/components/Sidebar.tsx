@@ -37,10 +37,6 @@ import { chatCollection, userCollection } from "@db/collections";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Contact from "@component/Contact";
 
-const range = (n) => {
-  return Array.from(Array(n).keys());
-};
-
 export default function Sidebar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [inputUsername, setEmail] = useState("");
