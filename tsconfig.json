@@ -9,6 +9,7 @@
       "@assets/*": ["assets/*"],
       "@hooks/*": ["hooks/*"],
       "@content/*": ["content/*"],
+      "@db/*": ["db/*"],
       "@utils/*": ["utils/*"],
       "@const/*": ["const/*"],
       "@mui/styled-engine": ["./node_modules/@mui/styled-engine-sc"] // this mapping is relative to "baseUrl",
