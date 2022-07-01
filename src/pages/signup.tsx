@@ -1,10 +1,11 @@
 import Seo from "@component/SEO";
 import NextLink from "next/link";
 import { Flex, Link } from "@chakra-ui/react";
-import useFirebaseAuth from "@hooks/useFirebaseAuth";
 
 import React from "react";
 import Authentication from "@component/Authentication";
+import { useAuth } from "../context/AuthContext";
+import { RouteUnAuthProtect } from "../layout/RouteGuard";
 
 export default function Signup() {
   const {
@@ -12,10 +13,10 @@ export default function Signup() {
     signInWithGithub,
     createUserWithEmailAndPassword,
     loading,
-  } = useFirebaseAuth();
+  } = useAuth();
 
   return (
-    <>
+    <RouteUnAuthProtect>
       <Seo title={"Signup | Message Grid"} />
       <Authentication
         title={"Signup"}
@@ -32,6 +33,6 @@ export default function Signup() {
           </NextLink>
         </Flex>
       </Authentication>
-    </>
+    </RouteUnAuthProtect>
   );
 }
