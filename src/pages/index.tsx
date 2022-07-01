@@ -1,10 +1,10 @@
 import Sidebar from "@component/Sidebar";
-import RouteProtect from "../layout/RouteGuard";
+import { RouteAuthProtect } from "../layout/RouteGuard";
 
 export default function Chat() {
   return (
-    <RouteProtect>
+    <RouteAuthProtect>
       <Sidebar />
-    </RouteProtect>
+    </RouteAuthProtect>
   );
 }
