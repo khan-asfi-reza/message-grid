@@ -3,6 +3,7 @@ import Seo from "@component/SEO";
 import LogoWithText from "@images/LogoText.png";
 import GoogleIcon from "@images/google.png";
 import GithubIcon from "@images/github.png";
+import Static from "@images/staticbg.png";
 import { validate as validateEmail } from "email-validator";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -21,40 +22,16 @@ import {
 } from "@chakra-ui/react";
 import { IoEye, IoEyeOff, IoLockClosed, IoMail } from "react-icons/io5";
 
-import React, { useEffect, useState } from "react";
-
-function LoginButton({ onClick, bg, logoBg, icon, hover, text }) {
-  return (
-    <Button
-      alignItems={"center"}
-      px={"0.1rem"}
-      bg={bg}
-      display={"flex"}
-      width={"15rem"}
-      onClick={onClick}
-      color={"white"}
-      _hover={hover}
-    >
-      <Center height={"90%"} bg={logoBg} px={"10px"} borderRadius={"5px"}>
-        <Box height={"15px"} boxSizing={"border-box"} width={"15px"}>
-          <Image alt={"Image"} width={15} height={15} src={icon} />
-        </Box>
-      </Center>
-      <Box flex={"1"}>
-        <Text variant={"p"} fontWeight={"500"} color={"gray.100"}>
-          {text}
-        </Text>
-      </Box>
-    </Button>
-  );
-}
+import React, { useState } from "react";
+import { LoginButton } from "@component/Buttons";
+import { loadingState } from "../context/AuthContext";
 
 interface AuthenticationProps {
   title: string;
   signInWithGoogle: Function;
   signInWithGithub: Function;
   signInWithEmail: Function;
-  loading: boolean;
+  loading: loadingState;
   children?: JSX.Element;
 }
 
@@ -95,7 +72,27 @@ const Authentication: React.FC<AuthenticationProps> = ({
   return (
     <>
       <Seo title={`${title} | Message Grid`} />
-      <Center width={"100%"} minH={"100vh"} bg={"#f7f7f7"}>
+      <Center
+        width={"100%"}
+        minH={"100vh"}
+        bg={"#f7f7f7"}
+        position={"relative"}
+      >
+        <Box
+          position={"absolute"}
+          height={"100%"}
+          width={"100%"}
+          top={0}
+          left={0}
+        >
+          <Image
+            alt={"Static Image"}
+            src={Static}
+            layout={"fill"}
+            objectFit={"contain"}
+            objectPosition={"center"}
+          />
+        </Box>
         <AnimatePresence exitBeforeEnter={true}>
           <Grid
             as={motion.div}
@@ -185,7 +182,7 @@ const Authentication: React.FC<AuthenticationProps> = ({
                 bg={"blue.300"}
                 width={"15rem"}
                 colorScheme={"blue"}
-                isLoading={loading}
+                isLoading={loading.emailLoading}
                 onClick={handleAuthentication}
                 disabled={
                   !user.email || !user.password || !validateEmail(user.email)
@@ -208,6 +205,7 @@ const Authentication: React.FC<AuthenticationProps> = ({
                   handleAppAuthentication(signInWithGoogle, "Google");
                 }}
                 icon={GoogleIcon}
+                isLoading={loading.googleLoading}
                 logoBg={"white"}
                 hover={{ bg: "blue.600" }}
                 text={"Login with Google"}
@@ -218,6 +216,7 @@ const Authentication: React.FC<AuthenticationProps> = ({
                   handleAppAuthentication(signInWithGithub, "Github");
                 }}
                 icon={GithubIcon}
+                isLoading={loading.githubLoading}
                 logoBg={"white"}
                 hover={{ bg: "gray.700" }}
                 text={"Login with Github"}
