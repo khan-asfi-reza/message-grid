@@ -37,19 +37,9 @@ export const ChatScreen = ({ chat, messages }) => {
                 {recipientUsername}
               </Text>
               {recipientSnapshot?.docs[0].data().online ? (
-                <Box
-                  h={"10px"}
-                  w={"10px"}
-                  rounded={"full"}
-                  bg={"green.500"}
-                ></Box>
+                <Box h={"10px"} w={"10px"} rounded={"full"} bg={"green.500"} />
               ) : (
-                <Box
-                  h={"10px"}
-                  w={"10px"}
-                  rounded={"full"}
-                  bg={"gray.500"}
-                ></Box>
+                <Box h={"10px"} w={"10px"} rounded={"full"} bg={"gray.500"} />
               )}
             </Flex>
             {recipientSnapshot?.docs[0].data().online ? (
