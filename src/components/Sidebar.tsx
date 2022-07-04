@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Box,
   Button,
   Flex,
   FormControl,
@@ -21,6 +22,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  SkeletonCircle,
+  SkeletonText,
   Stack,
   Text,
   useDisclosure,
@@ -50,7 +53,7 @@ export default function Sidebar() {
     "array-contains",
     username
   );
-  const [chatSnapshot] = useCollection(userChatRef as any);
+  const [chatSnapshot, loading] = useCollection(userChatRef as any);
 
   const checkChatExists = () =>
     !!chatSnapshot?.docs.find(
@@ -168,13 +171,30 @@ export default function Sidebar() {
         </Stack>
         <Stack
           spacing={5}
-          overflowY={"scroll"}
+          overflowY={"auto"}
           display={"flex"}
           flexDirection={"column"}
           flex={"auto"}
         >
+          {loading && (
+            <>
+              <Box display={"flex"} padding={"1rem 0"} gap={"10px"} bg="white">
+                <SkeletonCircle size="12" />
+                <SkeletonText flex={1} noOfLines={2} spacing="4" />
+              </Box>
+              <Box display={"flex"} padding={"1rem 0"} gap={"10px"} bg="white">
+                <SkeletonCircle size="12" />
+                <SkeletonText flex={1} noOfLines={2} spacing="4" />
+              </Box>
+            </>
+          )}
           {chatSnapshot?.docs.map((chat) => (
-            <Contact key={chat.id} chat={chat} username={username} />
+            <Contact
+              key={chat.id}
+              chat={chat}
+              id={chat.id}
+              username={username}
+            />
           ))}
         </Stack>
       </Stack>
