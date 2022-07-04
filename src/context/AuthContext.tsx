@@ -63,7 +63,7 @@ const formatAuthUser = (user) =>
     : null;
 
 // For context only, Not for use
-function useFirebaseAuth() {
+function useFirebaseAuth(signOutCallback) {
   const [authUser, setAuthUser] = useState(null);
   const [loading, dispatch] = useReducer(loadingReducer, loadingState);
 
@@ -123,10 +123,13 @@ function useFirebaseAuth() {
 
   const clear = () => {
     setAuthUser(null);
-    dispatch({ key: AUTH_TOGGLE_TRUE });
+    dispatch({ key: AUTH_TOGGLE_FALSE });
+    signOutCallback();
   };
 
-  const signOut = () => auth.signOut().then(clear);
+  const signOut = () => {
+    return auth.signOut().then(clear);
+  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -158,8 +161,8 @@ const AuthUserContext = createContext({
   signInWithGithub: async () => {},
 });
 
-export function AuthUserProvider({ children }) {
-  const auth = useFirebaseAuth();
+export function AuthUserProvider({ children, signOutCallback }) {
+  const auth = useFirebaseAuth(signOutCallback);
   return (
     <AuthUserContext.Provider value={auth}>{children}</AuthUserContext.Provider>
   );
