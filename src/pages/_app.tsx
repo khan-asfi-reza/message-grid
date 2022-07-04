@@ -72,6 +72,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               email: user.email,
               lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
               photoURL: user.photoURL,
+              online: true,
             },
             { merge: true }
           )
@@ -103,7 +104,29 @@ function MyApp({ Component, pageProps }: AppProps) {
         });
       });
     }
+    return () => {
+      setOfflineStatus();
+    };
   }, [checkUsernameExists, getUserName, onOpen, saveUserData, user]);
+
+  const setOfflineStatus = () => {
+    if (user && username) {
+      userCollection()
+        .doc(user.uid)
+        .set(
+          {
+            username: username,
+            email: user.email,
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+            photoURL: user.photoURL,
+            online: false,
+          },
+          { merge: true }
+        )
+        .then()
+        .catch();
+    }
+  };
 
   const saveUserName = () => {
     setLoading(true);
@@ -115,7 +138,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <Theme>
-      <AuthUserProvider>
+      <AuthUserProvider signOutCallback={setOfflineStatus}>
         <UserDetailsContext.Provider
           value={{ user: user, username: authUsername }}
         >
