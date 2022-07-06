@@ -11,7 +11,6 @@ import {
   InputLeftElement,
   Menu,
   MenuButton,
-  MenuDivider,
   MenuGroup,
   MenuItem,
   MenuList,
@@ -35,7 +34,7 @@ import {
   IoSearchOutline,
 } from "react-icons/io5";
 import { useAuth, useUserDetails } from "../context/AuthContext";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { chatCollection, userCollection } from "@db/collections";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Contact from "@component/Contact";
@@ -104,7 +103,10 @@ export default function Sidebar() {
       });
     } else {
       chatCollection()
-        .add({ users: [username, inputUsername] })
+        .add({
+          users: [username, inputUsername],
+          updated: firebase.firestore.FieldValue.serverTimestamp(),
+        })
         .then((r) => {
           chatCollection()
             .doc(r.id)
@@ -122,6 +124,30 @@ export default function Sidebar() {
     setLoadingCreateChat(false);
   };
 
+  function compare(a, b) {
+    if (!a.updated) {
+      return -1;
+    }
+    if (!b.updated) {
+      return 1;
+    }
+    if (a.updated.toDate() > b.updated.toDate()) {
+      return -1;
+    }
+    if (a.updated.toDate() < b.updated.toDate()) {
+      return 1;
+    }
+    return 0;
+  }
+
+  const chatLists = useCallback(() => {
+    const chat = [];
+    chatSnapshot?.docs.map((data) => {
+      chat.push({ ...data.data(), id: data.id, updated: data.data().updated });
+    });
+    chat.sort(compare);
+    return chat;
+  }, [chatSnapshot]);
   return (
     <>
       <Stack
@@ -202,7 +228,7 @@ export default function Sidebar() {
               </Box>
             </>
           )}
-          {chatSnapshot?.docs.map((chat) => (
+          {chatLists().map((chat) => (
             <Contact
               key={chat.id}
               chat={chat}
