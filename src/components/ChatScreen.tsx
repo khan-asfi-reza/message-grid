@@ -203,6 +203,8 @@ export const ChatScreen = ({ chat }) => {
         id={"scrollComponent"}
         padding={"1rem 2rem"}
         flexDirection={"column"}
+        height={"100vh"}
+        overflowY={"auto"}
       >
         {messageList().map((message, index) => (
           <Message
