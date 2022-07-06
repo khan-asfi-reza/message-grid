@@ -181,10 +181,7 @@ export const ChatScreen = ({ chat }) => {
                 Last seen{" "}
                 {recipientSnapshot?.docs[0]?.data().lastSeen
                   ? moment(
-                      recipientSnapshot?.docs[0]
-                        ?.data()
-                        .lastSeen?.toDate()
-                        .toDateString()
+                      recipientSnapshot?.docs[0]?.data().lastSeen?.toDate()
                     ).calendar()
                   : ""}
               </Text>
