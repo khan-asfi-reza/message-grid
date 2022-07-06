@@ -1,7 +1,15 @@
-import { Avatar, Box, Flex, IconButton, Text } from "@chakra-ui/react";
+import {
+  Avatar,
+  Box,
+  Flex,
+  IconButton,
+  SkeletonCircle,
+  SkeletonText,
+  Text,
+} from "@chakra-ui/react";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { useUserDetails } from "../context/AuthContext";
-import { getQueryId, getRecipientUsername } from "../utils";
+import { getQueryId, getRecipientUsername, isInViewport } from "../utils";
 import { chatCollection, userCollection } from "@db/collections";
 import { useCollection } from "react-firebase-hooks/firestore";
 import moment from "moment";
@@ -9,6 +17,7 @@ import { useRouter } from "next/router";
 import Message from "./Message";
 import { useCallback, useEffect, useRef } from "react";
 import ChatSend from "@component/ChatSend";
+import firebase from "firebase/compat/app";
 
 function usePrevious(value) {
   const ref = useRef();
@@ -38,7 +47,7 @@ export const ChatScreen = ({ chat }) => {
     .collection("messages")
     .orderBy("timestamp", "asc");
 
-  const [messageSnapshot] = useCollection(messageRef as any);
+  const [messageSnapshot, loading] = useCollection(messageRef as any);
 
   const messageList = useCallback(() => {
     if (messageSnapshot) {
@@ -59,6 +68,50 @@ export const ChatScreen = ({ chat }) => {
   }, [messageSnapshot, username]);
 
   const prevLength = usePrevious(messageList().length);
+
+  const getMessageSnapshotDocs = async () => {
+    return chatCollection()
+      .doc(getQueryId(router))
+      .collection("messageState")
+      .doc(recipientSnapshot?.docs[0].data().username);
+  };
+
+  const updateChatTimeStamp = async () => {
+    await chatCollection()
+      .doc(getQueryId(router))
+      .update("updated", firebase.firestore.FieldValue.serverTimestamp());
+  };
+
+  const setDeliveryState = async () => {
+    const messageStateDoc = await getMessageSnapshotDocs();
+    const getState = await messageStateDoc.get();
+    await messageStateDoc.set(
+      {
+        seen: false,
+        delivered: recipientSnapshot?.docs[0].data().online,
+        unread: getState.data()?.unread ? getState.data()?.unread + 1 : 1,
+      },
+      { merge: true }
+    );
+  };
+
+  const setDeliveryStateToDefault = useCallback(async () => {
+    if (username) {
+      chatCollection()
+        .doc(getQueryId(router))
+        .collection("messageState")
+        .doc(username)
+        .set(
+          {
+            seen: true,
+            delivered: true,
+            unread: 0,
+          },
+          { merge: true }
+        )
+        .then();
+    }
+  }, [router, username]);
 
   useEffect(() => {
     const length = prevLength === null ? 0 : prevLength;
@@ -84,58 +137,9 @@ export const ChatScreen = ({ chat }) => {
         }
       }
     }
-  }, [messageList, prevLength, username]);
 
-  const getMessageSnapshotDocs = async () => {
-    return chatCollection()
-      .doc(getQueryId(router))
-      .collection("messageState")
-      .doc(recipientSnapshot?.docs[0].data().username);
-  };
-
-  const isInViewport = (element) => {
-    const rect = element.getBoundingClientRect();
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <=
-        (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
-  };
-
-  useEffect(() => {
-    if (messageList()) {
-      if (username) {
-        chatCollection()
-          .doc(getQueryId(router))
-          .collection("messageState")
-          .doc(username)
-          .set(
-            {
-              seen: true,
-              delivered: true,
-              unread: 0,
-            },
-            { merge: true }
-          )
-          .then();
-      }
-    }
-  }, [messageList, router, username]);
-
-  const setDeliveryState = async () => {
-    const messageStateDoc = await getMessageSnapshotDocs();
-    const getState = await messageStateDoc.get();
-    await messageStateDoc.set(
-      {
-        seen: false,
-        delivered: recipientSnapshot?.docs[0].data().online,
-        unread: getState.data()?.unread ? getState.data()?.unread + 1 : 1,
-      },
-      { merge: true }
-    );
-  };
+    setDeliveryStateToDefault().then();
+  }, [messageList, prevLength, setDeliveryStateToDefault, username]);
 
   return (
     <Box
@@ -203,6 +207,18 @@ export const ChatScreen = ({ chat }) => {
         height={"100vh"}
         overflowY={"auto"}
       >
+        {loading && (
+          <>
+            <Box display={"flex"} padding={"1rem 0"} gap={"10px"}>
+              <SkeletonCircle size="12" />
+              <SkeletonText flex={1} noOfLines={3} spacing="4" />
+            </Box>
+            <Box display={"flex"} padding={"1rem 0"} gap={"10px"}>
+              <SkeletonCircle size="12" />
+              <SkeletonText flex={1} noOfLines={3} spacing="4" />
+            </Box>
+          </>
+        )}
         {messageList().map((message, index) => (
           <Message
             chatId={getQueryId(router)}
@@ -220,6 +236,7 @@ export const ChatScreen = ({ chat }) => {
         user={user}
         username={username}
         router={router}
+        updateChat={updateChatTimeStamp}
         callback={setDeliveryState}
       />
     </Box>
