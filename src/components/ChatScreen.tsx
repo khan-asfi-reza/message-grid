@@ -18,7 +18,7 @@ function usePrevious(value) {
   return ref.current;
 }
 
-export const ChatScreen = ({ chat, messages }) => {
+export const ChatScreen = ({ chat }) => {
   const { username, user } = useUserDetails();
   const recipientUsername = getRecipientUsername(chat.users, username);
   const router = useRouter();
@@ -54,16 +54,37 @@ export const ChatScreen = ({ chat, messages }) => {
         })),
       ];
     } else {
-      if (messages) {
-        return JSON.parse(messages).map((message) => ({
-          ...message,
-          user: message.user,
-          messages: message,
-          authUser: username,
-        }));
+      return [];
+    }
+  }, [messageSnapshot, username]);
+
+  const prevLength = usePrevious(messageList().length);
+
+  useEffect(() => {
+    const length = prevLength === null ? 0 : prevLength;
+    const list = messageList();
+    if (prevLength === 0 && list.length > length) {
+      endViewRef.current?.scrollIntoView();
+    }
+
+    if (list) {
+      if (
+        list.at(-1) &&
+        list.at(-1).user === username &&
+        length < list.length
+      ) {
+        endViewRef.current?.scrollIntoView();
+      } else {
+        try {
+          if (isInViewport(scrollViewRef.current?.children[list.length - 2])) {
+            endViewRef.current?.scrollIntoView();
+          }
+        } catch (e) {
+          console.log(e);
+        }
       }
     }
-  }, [messageSnapshot]);
+  }, [messageList, prevLength, username]);
 
   const getMessageSnapshotDocs = async () => {
     return chatCollection()
@@ -85,21 +106,6 @@ export const ChatScreen = ({ chat, messages }) => {
 
   useEffect(() => {
     if (messageList()) {
-      const list = messageList();
-      if (list.length === 0) {
-        return;
-      }
-      if (list.at(-1).user === username) {
-        endViewRef.current?.scrollIntoView();
-      } else {
-        try {
-          if (isInViewport(scrollViewRef.current?.children[list.length - 2])) {
-            endViewRef.current?.scrollIntoView();
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
       if (username) {
         chatCollection()
           .doc(getQueryId(router))
@@ -208,7 +214,7 @@ export const ChatScreen = ({ chat, messages }) => {
             {...message}
           />
         ))}
-        <Box ref={endViewRef} id={"endView"}></Box>
+        <Box ref={endViewRef} id={"endView"} />
       </Box>
       {/*Chat Send Component  */}
       <ChatSend
