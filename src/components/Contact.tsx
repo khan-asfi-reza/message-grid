@@ -30,7 +30,7 @@ export default function Contact({ chat, username, id }) {
     >
       <Avatar
         name={recipientUsername}
-        src={recipientSnapshot?.docs[0].data().photoURL}
+        src={recipientSnapshot?.docs[0]?.data().photoURL}
       />
       <Text wordBreak={"break-word"} fontWeight={"medium"}>
         {recipientUsername}
