@@ -5,12 +5,12 @@ import { chatCollection } from "@db/collections";
 import { getQueryId } from "../utils";
 import firebase from "firebase/compat/app";
 
-const ChatSend = ({ router, username, user, callback }) => {
+const ChatSend = ({ router, username, user, callback, updateChat }) => {
   const [input, setInput] = useState("");
 
-  const sendButtonClick = async (e) => {
+  const sendButtonClick = (e) => {
     e.preventDefault();
-    await chatCollection()
+    chatCollection()
       .doc(getQueryId(router))
       .collection("messages")
       .doc()
@@ -19,8 +19,9 @@ const ChatSend = ({ router, username, user, callback }) => {
         message: input,
         user: username,
         photoURL: user.photoURL,
-      });
-    await callback;
+      })
+      .then(updateChat);
+    callback();
     setInput("");
   };
 
