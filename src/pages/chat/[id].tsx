@@ -15,7 +15,7 @@ export default function Chat({ chat, messages }) {
       <Seo title={`Message Grid | ${getRecipientUsername(chat.users, user)}`} />
       <Flex>
         <Sidebar />
-        <ChatScreen chat={chat} messages={messages} />
+        <ChatScreen chat={chat} />
       </Flex>
     </RouteAuthProtect>
   );
