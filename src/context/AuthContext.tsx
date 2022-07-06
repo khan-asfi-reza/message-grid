@@ -67,18 +67,6 @@ function useFirebaseAuth(signOutCallback) {
   const [authUser, setAuthUser] = useState(null);
   const [loading, dispatch] = useReducer(loadingReducer, loadingState);
 
-  const authStateChanged = async (authState) => {
-    if (!authState) {
-      setAuthUser(null);
-      dispatch({ key: AUTH_TOGGLE_FALSE });
-      return;
-    }
-    dispatch({ key: AUTH_TOGGLE_TRUE });
-    const formattedUser = formatAuthUser(authState);
-    setAuthUser(formattedUser);
-    dispatch({ key: AUTH_TOGGLE_FALSE });
-  };
-
   const signInWithEmailAndPassword = async (
     email: string,
     password: string
@@ -121,14 +109,14 @@ function useFirebaseAuth(signOutCallback) {
     }
   };
 
-  const clear = () => {
+  const clear = async () => {
     setAuthUser(null);
     dispatch({ key: AUTH_TOGGLE_FALSE });
-    signOutCallback();
   };
 
-  const signOut = () => {
-    return auth.signOut().then(clear);
+  const signOut = async () => {
+    await signOutCallback();
+    await auth.signOut().then(clear);
   };
 
   useEffect(() => {
