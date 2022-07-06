@@ -11,8 +11,13 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import moment from "moment";
-import { IoEllipsisVertical, IoRepeatOutline } from "react-icons/io5";
+import {
+  IoEllipsisVertical,
+  IoRepeatOutline,
+  IoTrashBinOutline,
+} from "react-icons/io5";
 import { chatCollection } from "@db/collections";
+import { useRef } from "react";
 
 const getTimeDifference = (from, to) => new Date(from - to).getSeconds();
 
@@ -63,6 +68,22 @@ export default function Message({
     }
   };
 
+  const deleteRef = useRef(null);
+
+  const onMouseOver = (event) => {
+    if (event.shiftKey) {
+      if (deleteRef.current) {
+        deleteRef.current.style.visibility = "visible";
+      }
+    }
+  };
+
+  const onMouseLeave = () => {
+    if (deleteRef.current) {
+      deleteRef.current.style.visibility = "hidden";
+    }
+  };
+
   return (
     <Flex
       paddingBottom={valueIfNextUserIsSelf("5px", "20px")}
@@ -78,7 +99,7 @@ export default function Message({
           />
         }
       </Flex>
-      <Flex gap={"8px"} direction={"column"}>
+      <Flex width={"100%"} gap={"8px"} direction={"column"}>
         <Flex gap={"10px"} alignItems={"center"}>
           <Text
             fontWeight={"medium"}
@@ -95,7 +116,17 @@ export default function Message({
             )}
           </Text>
         </Flex>
-        <Flex role={"group"} gap={"12px"}>
+        <Flex
+          width={"100%"}
+          onMouseOver={onMouseOver}
+          onMouseUp={onMouseOver}
+          onMouseDown={onMouseOver}
+          onMouseUpCapture={onMouseOver}
+          onMouseLeave={onMouseLeave}
+          onMouseOut={onMouseLeave}
+          role={"group"}
+          gap={"12px"}
+        >
           <Tooltip label={moment(messages.timestamp).calendar()}>
             <Box
               color={isMessageSending() && "gray.300"}
@@ -121,7 +152,7 @@ export default function Message({
                 <IoEllipsisVertical />
               </MenuButton>
             </Tooltip>
-            <MenuList>
+            <MenuList zIndex={100}>
               <MenuItem>Reply</MenuItem>
               {user === authUser && (
                 <MenuItem onClick={deleteMessage}>Delete</MenuItem>
@@ -140,6 +171,21 @@ export default function Message({
               <IoRepeatOutline />
             </IconButton>
           </Tooltip>
+          {user === authUser && (
+            <Tooltip label={"Delete"}>
+              <IconButton
+                onClick={deleteMessage}
+                visibility={"hidden"}
+                ref={deleteRef}
+                bg={"transparent"}
+                color={"gray.500"}
+                aria-label={"Reply"}
+                _hover={{ color: "red.500" }}
+              >
+                <IoTrashBinOutline />
+              </IconButton>
+            </Tooltip>
+          )}
         </Flex>
       </Flex>
     </Flex>
