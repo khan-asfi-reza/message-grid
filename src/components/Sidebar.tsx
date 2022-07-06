@@ -39,10 +39,12 @@ import { useState } from "react";
 import { chatCollection, userCollection } from "@db/collections";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Contact from "@component/Contact";
+import firebase from "firebase/compat/app";
 
 export default function Sidebar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [inputUsername, setEmail] = useState("");
+  const [inputUsername, setChatUsername] = useState("");
+  const [message, setMessage] = useState("");
   const [loadingCreateChat, setLoadingCreateChat] = useState(false);
   const { user, username } = useUserDetails();
   const toast = useToast();
@@ -83,7 +85,7 @@ export default function Sidebar() {
     const userDoesNotExists = await checkUserDoesNotExist();
     const chatExists = checkChatExists();
     if (userDoesNotExists) {
-      setEmail("");
+      setChatUsername("");
       toast({
         title: "User not found",
         description: `User with ${inputUsername} is not available`,
@@ -92,7 +94,7 @@ export default function Sidebar() {
         duration: 10000,
       });
     } else if (chatExists) {
-      setEmail("");
+      setChatUsername("");
       toast({
         title: "Chat exists",
         description: `Chat with ${inputUsername} already exists`,
@@ -103,7 +105,19 @@ export default function Sidebar() {
     } else {
       chatCollection()
         .add({ users: [username, inputUsername] })
-        .then();
+        .then((r) => {
+          chatCollection()
+            .doc(r.id)
+            .collection("messages")
+            .add({
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              message: message,
+              user: username,
+              photoURL: user.photoURL,
+            })
+            .then()
+            .catch();
+        });
     }
     setLoadingCreateChat(false);
   };
@@ -147,13 +161,13 @@ export default function Sidebar() {
                 <IoEllipsisVerticalOutline />
               </MenuButton>
               <MenuList>
-                <MenuGroup title="Profile">
-                  <MenuItem>My Account</MenuItem>
-                  <MenuItem>Preferences </MenuItem>
-                </MenuGroup>
-                <MenuDivider />
+                {/*<MenuGroup title="Profile">*/}
+                {/*  <MenuItem>My Account</MenuItem>*/}
+                {/*  <MenuItem>Preferences </MenuItem>*/}
+                {/*</MenuGroup>*/}
+                {/*<MenuDivider />*/}
                 <MenuGroup>
-                  <MenuItem>Settings</MenuItem>
+                  {/*<MenuItem>Settings</MenuItem>*/}
                   <MenuItem onClick={signOut}>Logout</MenuItem>
                 </MenuGroup>
               </MenuList>
@@ -205,13 +219,23 @@ export default function Sidebar() {
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Type Username</FormLabel>
               <Input
                 value={inputUsername}
                 onChange={(e) => {
-                  setEmail(e.target.value);
+                  setChatUsername(e.target.value);
                 }}
-                placeholder="Email Address"
+                placeholder="Username"
+              />
+            </FormControl>
+            <FormControl pt={"1rem"}>
+              <FormLabel>Your message</FormLabel>
+              <Input
+                value={message}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                }}
+                placeholder="message"
               />
             </FormControl>
           </ModalBody>
@@ -219,7 +243,9 @@ export default function Sidebar() {
           <ModalFooter>
             <Button
               onClick={createChat}
-              disabled={!inputUsername || inputUsername === username}
+              disabled={
+                !inputUsername || inputUsername === username || !message
+              }
               colorScheme="blue"
               isLoading={loadingCreateChat}
               type={"submit"}
