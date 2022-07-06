@@ -6,7 +6,7 @@
 .pnp.js
 .idea
 .env.local
-
+backup
 # testing
 /coverage
 
