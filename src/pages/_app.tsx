@@ -148,6 +148,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         setError("Username taken");
       } else {
         saveUserData(username, () => {
+          setAuthUsername(username);
           setLoading(false);
           onClose();
         });
