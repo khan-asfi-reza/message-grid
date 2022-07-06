@@ -29,7 +29,7 @@ const ChatSend = ({ router, username, user, callback }) => {
       as={"form"}
       display={"flex"}
       bg={"#f7f7f7"}
-      zIndex={10}
+      zIndex={100}
       justifyContent={"space-between"}
       position={"sticky"}
       bottom={0}
