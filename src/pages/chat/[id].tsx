@@ -29,21 +29,6 @@ export async function getServerSideProps(context) {
     await Router.push("/");
   }
 
-  const messageRes = await ref
-    .collection("messages")
-    .orderBy("timestamp", "asc")
-    .get();
-
-  const messages = messageRes.docs
-    .map((doc) => ({
-      id: doc.id,
-      timestamp: doc.data().timestamp,
-      ...doc.data(),
-    }))
-    .map((message) => ({
-      ...message,
-      timestamp: message.timestamp.toDate().getTime(),
-    }));
   const chatRes = await ref.get();
   const chat = {
     id: chatRes.id,
@@ -52,7 +37,6 @@ export async function getServerSideProps(context) {
 
   return {
     props: {
-      messages: JSON.stringify(messages),
       chat: chat,
     },
   };
