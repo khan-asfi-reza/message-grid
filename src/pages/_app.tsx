@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "nprogress/nprogress.css";
 import type { AppProps } from "next/app";
 import { AuthUserProvider, UserDetailsContext } from "../context/AuthContext";
 import Theme from "../layout/Theme";
@@ -7,6 +8,7 @@ import { auth } from "../firebase.conf";
 import firebase from "firebase/compat/app";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { userCollection } from "@db/collections";
+import NProgress from "nprogress";
 import {
   Button,
   Center,
@@ -24,6 +26,15 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { Loader } from "@component/Loader";
+import Router, { useRouter } from "next/router";
+import { router } from "next/client";
+
+Router.events.on("routeChangeStart", (url) => {
+  console.log(`Loading: ${url}`);
+  NProgress.start();
+});
+Router.events.on("routeChangeComplete", () => NProgress.done());
+Router.events.on("routeChangeError", () => NProgress.done());
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [user] = useAuthState(auth as any);
@@ -33,6 +44,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const loadingModal = useDisclosure();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const checkUsernameExists = useCallback(async (_name) => {
     const userCollectionRef = await userCollection()
@@ -106,6 +118,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       e.returnValue = "";
       await setOfflineStatus().then();
     });
+
+    return () => {
+      setOfflineStatus().then().catch();
+    };
   }, [setOfflineStatus]);
 
   useEffect(() => {
@@ -123,10 +139,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         });
       });
     }
-
-    return () => {
-      setOfflineStatus().then();
-    };
   }, [checkUsernameExists, getUserName, onOpen, saveUserData, user]);
 
   const saveUserName = () => {
