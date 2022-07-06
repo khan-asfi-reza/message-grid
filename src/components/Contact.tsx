@@ -1,18 +1,26 @@
-import { Avatar, Flex, Text } from "@chakra-ui/react";
+import { Avatar, Box, Flex, Text } from "@chakra-ui/react";
 import { getRecipientUsername } from "../utils";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { userCollection } from "@db/collections";
+import { chatCollection, userCollection } from "@db/collections";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function Contact({ chat, username, id }) {
-  const recipientUsername = getRecipientUsername(chat.data().users, username);
+  const recipientUsername = getRecipientUsername(chat.users, username);
   const userCollectionRef = userCollection().where(
     "username",
     "==",
-    getRecipientUsername(chat.data().users, username)
+    getRecipientUsername(chat.users, username)
   );
   const [recipientSnapshot] = useCollection(userCollectionRef as any);
+
+  const [messageStateSnapshot] = useCollection(
+    chatCollection()
+      .doc(id)
+      .collection("messageState")
+      .doc(getRecipientUsername(chat.users, username)) as any
+  );
 
   const router = useRouter();
 
@@ -32,9 +40,12 @@ export default function Contact({ chat, username, id }) {
         name={recipientUsername}
         src={recipientSnapshot?.docs[0]?.data().photoURL}
       />
-      <Text wordBreak={"break-word"} fontWeight={"medium"}>
-        {recipientUsername}
-      </Text>
+      <Box>
+        <Text wordBreak={"break-word"} fontWeight={"medium"}>
+          {recipientUsername}
+        </Text>
+        <Text>{messageStateSnapshot?.docs.at(0).data().unread}</Text>
+      </Box>
     </Flex>
   );
 }
