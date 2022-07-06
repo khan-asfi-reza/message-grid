@@ -57,7 +57,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       const userCollectionRef = await userCollection()
         .where("email", "==", user.email)
         .get();
-      return userCollectionRef?.docs.at(0).data();
+      return userCollectionRef?.docs[0]?.data();
     }
   }, [user]);
 
@@ -83,56 +83,63 @@ function MyApp({ Component, pageProps }: AppProps) {
     [user]
   );
 
+  const setOfflineStatus = useCallback(async () => {
+    if (user && authUsername) {
+      userCollection()
+        .doc(user.uid)
+        .update("online", false)
+        .then(() => {
+          userCollection()
+            .doc(user.uid)
+            .update(
+              "lastSeen",
+              firebase.firestore.FieldValue.serverTimestamp()
+            );
+        })
+        .catch();
+    }
+  }, [authUsername, user]);
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", async (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+      await setOfflineStatus().then();
+    });
+  }, [setOfflineStatus]);
+
   useEffect(() => {
     if (user) {
       loadingModal.onOpen();
       getUserName().then((r) => {
         loadingModal.onClose();
-        const username = r.username || "";
+        const username = r?.username || "";
         setAuthUsername(username);
         if (!username) {
           onOpen();
         }
-        checkUsernameExists(username).then((exists) => {
-          if (!exists) {
-            saveUserData(username, () => {
-              setAuthUsername(username);
-            });
-          } else {
-            setError("Username taken");
-          }
+        saveUserData(username, () => {
+          setAuthUsername(username);
         });
       });
     }
+
     return () => {
-      setOfflineStatus();
+      setOfflineStatus().then();
     };
   }, [checkUsernameExists, getUserName, onOpen, saveUserData, user]);
 
-  const setOfflineStatus = () => {
-    if (user && username) {
-      userCollection()
-        .doc(user.uid)
-        .set(
-          {
-            username: username,
-            email: user.email,
-            lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-            photoURL: user.photoURL,
-            online: false,
-          },
-          { merge: true }
-        )
-        .then()
-        .catch();
-    }
-  };
-
   const saveUserName = () => {
     setLoading(true);
-    saveUserData(username, () => {
-      setLoading(false);
-      onClose();
+    checkUsernameExists(username).then((exists) => {
+      if (exists) {
+        setError("Username taken");
+      } else {
+        saveUserData(username, () => {
+          setLoading(false);
+          onClose();
+        });
+      }
     });
   };
 
