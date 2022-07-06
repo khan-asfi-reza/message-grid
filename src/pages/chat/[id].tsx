@@ -1,11 +1,12 @@
 import { Box, Flex } from "@chakra-ui/react";
 import Sidebar from "@component/Sidebar";
-import { RouteAuthProtect } from "../../layout/RouteGuard";
+import { RouteAuthProtect } from "@layout/RouteGuard";
 import { chatCollection } from "@db/collections";
 import Seo from "@component/SEO";
 import { getRecipientUsername } from "../../utils";
 import { useUserDetails } from "../../context/AuthContext";
 import { ChatScreen } from "@component/ChatScreen";
+import Router from "next/router";
 
 export default function Chat({ chat, messages }) {
   const { user } = useUserDetails();
@@ -21,7 +22,12 @@ export default function Chat({ chat, messages }) {
 }
 
 export async function getServerSideProps(context) {
-  const ref = chatCollection().doc(context.query.id);
+  let ref;
+  try {
+    ref = chatCollection().doc(context.query.id);
+  } catch (e) {
+    await Router.push("/");
+  }
 
   const messageRes = await ref
     .collection("messages")
