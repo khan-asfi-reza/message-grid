@@ -2,19 +2,31 @@ import { Avatar, Box, Flex, Text } from "@chakra-ui/react";
 import { getRecipientUsername } from "../utils";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { chatCollection, userCollection } from "@db/collections";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 
-export default function Contact({ chat, username, id }) {
+interface ContactProps {
+  chat: {
+    users: Array<string>;
+    updated: Date;
+    id: string;
+  };
+  username: string;
+  id: string;
+}
+
+export default function Contact({ chat, username, id }: ContactProps) {
+  // Recipient Username
   const recipientUsername = getRecipientUsername(chat.users, username);
+  // User Collection where username is Recipient Username
   const userCollectionRef = userCollection().where(
     "username",
     "==",
     getRecipientUsername(chat.users, username)
   );
+  // Recipient snapshot
   const [recipientSnapshot] = useCollection(userCollectionRef as any);
 
+  // Message state snapshot
   const [messageStateSnapshot] = useCollection(
     chatCollection()
       .doc(id)
