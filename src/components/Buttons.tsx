@@ -2,6 +2,17 @@ import { Box, Button, Center, Text } from "@chakra-ui/react";
 import Image from "next/image";
 import React from "react";
 
+/**
+ * Login/Signup Button
+ * @param {React.MouseEvent<HTMLButtonElement>} onClick
+ * @param {string} bg
+ * @param {string} logoBg
+ * @param {JSX.Element | string } icon
+ * @param {Object} hover
+ * @param {string} text
+ * @param {boolean} isLoading
+ * @component
+ */
 export function LoginButton({
   onClick,
   bg,
