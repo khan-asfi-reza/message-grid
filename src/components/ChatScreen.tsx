@@ -27,28 +27,44 @@ function usePrevious(value) {
   return ref.current;
 }
 
-export const ChatScreen = ({ chat }) => {
+interface ChatScreenPropInterface {
+  chat: {
+    users: Array<string>;
+    id: string;
+  };
+}
+
+export const ChatScreen = ({ chat }: ChatScreenPropInterface) => {
+  // Authenticated username and user details
   const { username, user } = useUserDetails();
+  // Partner/Chat Partner username
   const recipientUsername = getRecipientUsername(chat.users, username);
   const router = useRouter();
+  // To end of the message view ref
   const endViewRef = useRef(null);
+  // Scroll List view ref
   const scrollViewRef = useRef(null);
 
+  // User collection where user is partner user
   const userCollectionRef = userCollection().where(
     "username",
     "==",
     getRecipientUsername(chat.users, username)
   );
 
+  // Get partner user Data from database
   const [recipientSnapshot] = useCollection(userCollectionRef as any);
 
+  // Message Ref Chat Collection
   const messageRef = chatCollection()
     .doc(getQueryId(router))
     .collection("messages")
     .orderBy("timestamp", "asc");
 
+  // All message snapshot from the current chat
   const [messageSnapshot, loading] = useCollection(messageRef as any);
 
+  // List of messages parsed properly
   const messageList = useCallback(() => {
     if (messageSnapshot) {
       return [
@@ -67,59 +83,69 @@ export const ChatScreen = ({ chat }) => {
     }
   }, [messageSnapshot, username]);
 
+  // Message previous length
   const prevLength = usePrevious(messageList().length);
 
-  const getMessageSnapshotDocs = async () => {
-    return chatCollection()
-      .doc(getQueryId(router))
-      .collection("messageState")
-      .doc(recipientSnapshot?.docs[0].data().username);
-  };
+  // Message state, read unread state
+  const getMessageSnapshotDocs = useCallback(async () => {
+    return chatCollection().doc(getQueryId(router)).collection("messageState");
+  }, [router]);
 
+  // Update Chat Timestamp
   const updateChatTimeStamp = async () => {
     await chatCollection()
       .doc(getQueryId(router))
       .update("updated", firebase.firestore.FieldValue.serverTimestamp());
   };
 
+  // Set Delivery state, if message is sent by default
+  // set seen false and increase number of unread
   const setDeliveryState = async () => {
     const messageStateDoc = await getMessageSnapshotDocs();
-    const getState = await messageStateDoc.get();
-    await messageStateDoc.set(
+    const getState = await messageStateDoc
+      .where("user", "==", recipientUsername)
+      .get();
+    await messageStateDoc.doc(getState.docs.at(0).id).set(
       {
+        user: recipientUsername,
         seen: false,
         delivered: recipientSnapshot?.docs[0].data().online,
-        unread: getState.data()?.unread ? getState.data()?.unread + 1 : 1,
+        unread: getState.docs[0].data()?.unread
+          ? getState.docs[0].data()?.unread + 1
+          : 1,
       },
       { merge: true }
     );
   };
 
+  // Set Delivery Default, make seen true, delivered set to true
   const setDeliveryStateToDefault = useCallback(async () => {
     if (username) {
-      chatCollection()
-        .doc(getQueryId(router))
-        .collection("messageState")
-        .doc(username)
-        .set(
-          {
-            seen: true,
-            delivered: true,
-            unread: 0,
-          },
-          { merge: true }
-        )
-        .then();
+      const messageStateDoc = await getMessageSnapshotDocs();
+      const getState = await messageStateDoc
+        .where("user", "==", username)
+        .get();
+      await messageStateDoc.doc(getState.docs.at(0).id).set(
+        {
+          user: username,
+          seen: true,
+          delivered: true,
+          unread: 0,
+        },
+        { merge: true }
+      );
     }
-  }, [router, username]);
+  }, [getMessageSnapshotDocs, username]);
 
+  // If initial load is complete then scroll to bottom
+  // If auth user sends message then scroll to bottom
+  // If it is already in the bottom, scroll to the new message
   useEffect(() => {
     const length = prevLength === null ? 0 : prevLength;
     const list = messageList();
     if (prevLength === 0 && list.length > length) {
       endViewRef.current?.scrollIntoView();
     }
-
     if (list) {
       if (
         list.at(-1) &&
@@ -132,9 +158,7 @@ export const ChatScreen = ({ chat }) => {
           if (isInViewport(scrollViewRef.current?.children[list.length - 2])) {
             endViewRef.current?.scrollIntoView();
           }
-        } catch (e) {
-          console.log(e);
-        }
+        } catch (e) {}
       }
     }
 
