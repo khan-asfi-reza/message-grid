@@ -2,6 +2,10 @@ import { Box, Center, Spinner, Stack, Text } from "@chakra-ui/react";
 import Image from "next/image";
 import LogoWithText from "@images/LogoText.png";
 
+/**
+ * Screen loader while authentication details loading
+ * @component
+ */
 export const Loader = () => {
   return (
     <Center minH={"100vh"} width={"100%"} bg={"#f7f7f7"} borderRadius={"10px"}>
