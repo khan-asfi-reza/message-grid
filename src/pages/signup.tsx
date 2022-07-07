@@ -5,7 +5,7 @@ import { Flex, Link } from "@chakra-ui/react";
 import React from "react";
 import Authentication from "@component/Authentication";
 import { useAuth } from "../context/AuthContext";
-import { RouteUnAuthProtect } from "../layout/RouteGuard";
+import { RouteUnAuthProtect } from "@layout/RouteGuard";
 
 export default function Signup() {
   const {
