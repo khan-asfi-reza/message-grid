@@ -19,8 +19,30 @@ import {
 import { chatCollection } from "@db/collections";
 import { useRef } from "react";
 
-const getTimeDifference = (from, to) => new Date(from - to).getSeconds();
+const getTimeDifference = (from: number, to: number): number =>
+  new Date(from - to).getSeconds();
 
+interface MessageInterface {
+  user: string;
+  messages: { [p: string]: any; timestamp: number };
+  authUser: string;
+  messageList: Array<any>;
+  index: number;
+  chatId: string;
+  id: string;
+}
+
+/**
+ *
+ * @param {string} user Message user. Message sent by user
+ * @param {Object} messages Messages Object, {message: string, timestamp: Date, photoURL: string}
+ * @param {string} authUser Auth username
+ * @param {Array} messageList List of messages
+ * @param {number} index Index of message
+ * @param {string} chatId Chat ID
+ * @param {string} id Message ID
+ * @component
+ */
 export default function Message({
   user,
   messages,
@@ -29,25 +51,29 @@ export default function Message({
   index,
   chatId,
   id,
-}) {
-  const isSelfOrPartner = () => user === authUser;
-
+}: MessageInterface) {
+  // If message is sending or sent
   const isMessageSending = () => !!!messages.timestamp;
 
+  // If next message is sent from authenticated user
   const isNextUserSelf = () =>
     index < messageList.length - 1 && messageList[index + 1].user === user;
 
-  const valueIfUserIsSelf = (selfValue, partnerValue) =>
-    isSelfOrPartner() ? selfValue : partnerValue;
-
+  // If next message is sent from authenticated user
+  // then return self value else return partnerValue
   const valueIfNextUserIsSelf = (selfValue, partnerValue) =>
     isNextUserSelf() ? selfValue : partnerValue;
 
+  // If previous message is sent from authenticated user
+  // then return self value else return partnerValue
   const valueIfPreviousUserIsSelf = (selfValue, partnerValue) =>
     index > 0 && messageList[index - 1].user === user
       ? selfValue
       : partnerValue;
 
+  // IF previous message is sent from authenticated user and
+  // Time between two message is between 30 minutes, then
+  // return trueVal else return defaultVal
   const valueIfPrevIsSelfAndTime = (trueVal, defaultVal) =>
     valueIfPreviousUserIsSelf(true, false) &&
     (isMessageSending() ||
@@ -58,6 +84,8 @@ export default function Message({
       ? trueVal
       : defaultVal;
 
+  // Delete message only if the message
+  // is sent from the authenticated user
   const deleteMessage = async () => {
     if (user === authUser) {
       await chatCollection()
@@ -68,8 +96,10 @@ export default function Message({
     }
   };
 
+  // Delete Component Ref
   const deleteRef = useRef(null);
 
+  // If mouse over and with shift key then make delete key visible
   const onMouseOver = (event) => {
     if (event.shiftKey) {
       if (deleteRef.current) {
@@ -78,6 +108,7 @@ export default function Message({
     }
   };
 
+  // If mouse leaves then make it hidden
   const onMouseLeave = () => {
     if (deleteRef.current) {
       deleteRef.current.style.visibility = "hidden";
