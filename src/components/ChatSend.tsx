@@ -1,10 +1,11 @@
 import { Button, Flex, IconButton, Input } from "@chakra-ui/react";
 import { IoHappyOutline, IoPaperPlaneOutline } from "react-icons/io5";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { chatCollection } from "@db/collections";
 import { getQueryId } from "../utils";
 import firebase from "firebase/compat/app";
 
+// Handle Chat Send Functions
 const ChatSend = ({ router, username, user, callback, updateChat }) => {
   const [input, setInput] = useState("");
 
