@@ -34,28 +34,43 @@ import {
   IoSearchOutline,
 } from "react-icons/io5";
 import { useAuth, useUserDetails } from "../context/AuthContext";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { chatCollection, userCollection } from "@db/collections";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Contact from "@component/Contact";
 import firebase from "firebase/compat/app";
 
+/**
+ * Sidebar for Contacts
+ * @component
+ **/
 export default function Sidebar() {
+  // useDisclosure for starting a new chat
   const { isOpen, onOpen, onClose } = useDisclosure();
+  // The person to send message , his or her username
   const [inputUsername, setChatUsername] = useState("");
+  // The message authenticated user is supposed to send
   const [message, setMessage] = useState("");
+  // Loading chat send
   const [loadingCreateChat, setLoadingCreateChat] = useState(false);
+  // Authenticated user details
   const { user, username } = useUserDetails();
+  // Toast component ChakraUI
   const toast = useToast();
+  // Sign-out function
   const { signOut } = useAuth();
 
+  // Chats that contain authenticated user
   const userChatRef = chatCollection().where(
     "users",
     "array-contains",
     username
   );
+
+  // Chat snapshot
   const [chatSnapshot, loading] = useCollection(userChatRef as any);
 
+  // Check if chat exists with input username
   const checkChatExists = () =>
     !!chatSnapshot?.docs.find(
       (chat) =>
@@ -63,6 +78,7 @@ export default function Sidebar() {
           ?.length > 0
     );
 
+  // Get user data
   const checkUser = async (_username) => {
     return await userCollection()
       .where("username", "==", _username)
@@ -70,6 +86,7 @@ export default function Sidebar() {
       .get();
   };
 
+  // Check if user exists
   const checkUserDoesNotExist = async () => {
     const users = await checkUser(inputUsername);
     const userList = [];
@@ -79,6 +96,7 @@ export default function Sidebar() {
     return userList.length === 0;
   };
 
+  // Create new chat with written username
   const createChat = async () => {
     setLoadingCreateChat(true);
     const userDoesNotExists = await checkUserDoesNotExist();
@@ -124,6 +142,7 @@ export default function Sidebar() {
     setLoadingCreateChat(false);
   };
 
+  // Compare updated<Timestamp> ascending
   function compare(a, b) {
     if (!a.updated) {
       return -1;
@@ -140,6 +159,7 @@ export default function Sidebar() {
     return 0;
   }
 
+  // Chat lists filtered ordered as updated[timestamp] ascending
   const chatLists = useCallback(() => {
     const chat = [];
     chatSnapshot?.docs.map((data) => {
