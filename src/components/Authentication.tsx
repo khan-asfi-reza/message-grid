@@ -26,15 +26,28 @@ import React, { useState } from "react";
 import { LoginButton } from "@component/Buttons";
 import { loadingState } from "../context/AuthContext";
 
+// Authentication Component Props
 interface AuthenticationProps {
   title: string;
-  signInWithGoogle: Function;
-  signInWithGithub: Function;
-  signInWithEmail: Function;
+  signInWithGoogle(): Promise<void>;
+  signInWithGithub(): Promise<void>;
+  signInWithEmail(email: string, password: string): Promise<void>;
   loading: loadingState;
   children?: JSX.Element;
 }
 
+/**
+ * Component for Handling Authentication
+ * This component contains the base structure for either Signup or Login.
+ * Login/Signup any Authentication Page will look similar but functionality will be different
+ * @param {string} title Title of the page
+ * @param {()=>Promise<void>} signInWithGoogle Google SignIn function provided by firebase
+ * @param {()=>Promise<void>} signInWithGithub Github SignIn function provided by firebase
+ * @param {()=>Promise<void>} signInWithEmail Email and Password auth provided by firebase
+ * @param {boolean} loading If Authentication process is loading
+ * @param {JSX.Element} children React Children
+ * @component
+ */
 const Authentication: React.FC<AuthenticationProps> = ({
   title,
   signInWithGoogle,
@@ -43,26 +56,43 @@ const Authentication: React.FC<AuthenticationProps> = ({
   loading,
   children,
 }) => {
+  // Email, password for authentication state
   const [user, setUser] = useState({ email: "", password: "" });
+  // Error information
   const [error, setError] = useState("");
-  const [show, setShow] = React.useState(false);
+  // Password view / hide state
+  const [show, setShow] = useState(false);
+  // Handle Password hide/view function
   const handleClick = () => setShow(!show);
 
-  const handleInput = (event) => {
+  /**
+   * Handle user state input, save user email and password
+   * @param {React.ChangeEvent<HTMLInputElement>} event
+   **/
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUser({
       ...user,
       [event.target.name]: event.target.value,
     });
   };
 
+  /**
+   * Handle Email and password authentication
+   **/
   const handleAuthentication = () => {
     setError("");
     signInWithEmail(user.email, user.password).catch(() => {
-      setError(`Failed to process your action, ${title} failed`);
+      setError(`Failed to process your action, 
+                           ${title} failed`);
     });
   };
 
-  const handleAppAuthentication = (callback, app) => {
+  /**
+   *
+   * @param {Async Function} callback Asynchronous callback option: GoogleSignIn, GithubSignIn
+   * @param {string} app Github / Google
+   */
+  const handleAppAuthentication = (callback: Function, app: string) => {
     setError("");
     callback().catch(() => {
       setError(`Failed to ${title} with ${app}`);
