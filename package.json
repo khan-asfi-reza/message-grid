@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --fix *.ts *tsx",
-    "pretty-quick": "pretty-quick"
+    "pretty-quick": "pretty-quick",
+    "docs": "jsdoc -c jsdoc.conf.json"
   },
   "husky": {
     "hooks": {
@@ -18,9 +19,11 @@
     "@chakra-ui/react": "^2.2.1",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
+    "better-docs": "^2.7.2",
     "email-validator": "^2.0.4",
     "firebase": "^9.8.4",
     "framer-motion": "^6.3.16",
+    "jsdoc": "^3.6.10",
     "moment": "^2.29.3",
     "next": "12.2.0",
     "next-transpile-modules": "^9.0.0",
@@ -28,7 +31,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-firebase-hooks": "^5.0.3",
-    "react-icons": "^4.4.0"
+    "react-icons": "^4.4.0",
+    "react-tsdoc": "^1.3.5"
   },
   "devDependencies": {
     "@types/node": "18.0.0",
