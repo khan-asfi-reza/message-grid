@@ -105,14 +105,23 @@ export const ChatScreen = ({ chat }: ChatScreenPropInterface) => {
     const getState = await messageStateDoc
       .where("user", "==", recipientUsername)
       .get();
-    await messageStateDoc.doc(getState.docs.at(0).id).set(
+    let setter;
+    let unreadStat;
+    if (getState?.docs[0]) {
+      setter = messageStateDoc.doc(getState?.docs[0].id);
+      unreadStat = getState.docs[0].data()?.unread
+        ? getState.docs[0].data()?.unread + 1
+        : 1;
+    } else {
+      setter = messageStateDoc.doc();
+      unreadStat = 1;
+    }
+    await setter.set(
       {
         user: recipientUsername,
         seen: false,
         delivered: recipientSnapshot?.docs[0].data().online,
-        unread: getState.docs[0].data()?.unread
-          ? getState.docs[0].data()?.unread + 1
-          : 1,
+        unread: unreadStat,
       },
       { merge: true }
     );
@@ -125,7 +134,13 @@ export const ChatScreen = ({ chat }: ChatScreenPropInterface) => {
       const getState = await messageStateDoc
         .where("user", "==", username)
         .get();
-      await messageStateDoc.doc(getState.docs.at(0).id).set(
+      let setter;
+      if (getState?.docs[0]) {
+        setter = messageStateDoc.doc(getState?.docs[0].id);
+      } else {
+        setter = messageStateDoc.doc();
+      }
+      await setter.set(
         {
           user: username,
           seen: true,
