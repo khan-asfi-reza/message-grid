@@ -170,11 +170,10 @@ export default function Sidebar() {
   }, [chatSnapshot]);
   return (
     <>
-      <Stack
+      <Box
         className={"sidebar"}
         display={"flex"}
         flexDirection={"column"}
-        spacing={5}
         p={"1rem 2rem"}
         maxH={"100vh"}
         height={"100vh"}
@@ -230,6 +229,7 @@ export default function Sidebar() {
           <Button onClick={onOpen}>New Chat +</Button>
         </Stack>
         <Stack
+          paddingY={"20px"}
           spacing={5}
           overflowY={"auto"}
           display={"flex"}
@@ -257,7 +257,7 @@ export default function Sidebar() {
             />
           ))}
         </Stack>
-      </Stack>
+      </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
