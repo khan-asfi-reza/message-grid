@@ -1,7 +1,6 @@
 import { createContext, useContext } from "react";
 import { useReducer, useState, useEffect } from "react";
 import { auth, githubAuthProvider, googleAuthProvider } from "../firebase.conf";
-import { useAuthState } from "react-firebase-hooks/auth";
 
 // Google, GitHub, Email and Auth Loading State
 const GOOGLE_TOGGLE_TRUE = "GOOGLE_TOGGLE_TRUE";
