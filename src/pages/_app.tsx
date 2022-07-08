@@ -11,7 +11,6 @@ import { userCollection } from "@db/collections";
 import NProgress from "nprogress";
 import {
   Button,
-  Center,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -25,27 +24,30 @@ import {
   ModalOverlay,
   useDisclosure,
 } from "@chakra-ui/react";
-import { Loader } from "@component/Loader";
-import Router, { useRouter } from "next/router";
-import { router } from "next/client";
+import Router from "next/router";
 
-Router.events.on("routeChangeStart", (url) => {
-  console.log(`Loading: ${url}`);
+Router.events.on("routeChangeStart", () => {
   NProgress.start();
 });
 Router.events.on("routeChangeComplete", () => NProgress.done());
 Router.events.on("routeChangeError", () => NProgress.done());
 
 function MyApp({ Component, pageProps }: AppProps) {
+  // User Auth State from Firebase
   const [user] = useAuthState(auth as any);
+  // Chakra UI Modal hook, open, close function and if the modal is open
   const { isOpen, onOpen, onClose } = useDisclosure();
+  // Suppose user has no username
+  // It will open a modal to store the user's username
+  // This state stores user input
   const [username, setUsername] = useState("");
+  // Load authenticated user's username
   const [authUsername, setAuthUsername] = useState("");
-  const loadingModal = useDisclosure();
+  // Loading State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
+  // Check if username exists
   const checkUsernameExists = useCallback(async (_name) => {
     const userCollectionRef = await userCollection()
       .where("username", "==", _name)
@@ -53,6 +55,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     return userCollectionRef?.docs.length > 0;
   }, []);
 
+  // Handle username input
   const handleInput = (e) => {
     checkUsernameExists(e.target.value).then((exists) => {
       if (exists) {
@@ -64,6 +67,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     setUsername(e.target.value);
   };
 
+  // Get username of the authenticated user
   const getUserName = useCallback(async () => {
     if (user) {
       const userCollectionRef = await userCollection()
@@ -73,6 +77,9 @@ function MyApp({ Component, pageProps }: AppProps) {
     }
   }, [user]);
 
+  // Save user data,
+  // Save user's username and
+  // Save LastSeen and PhotoURL
   const saveUserData = useCallback(
     (username, callback = () => {}) => {
       if (user) {
@@ -95,6 +102,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     [user]
   );
 
+  // Set offline status when app will be turned off
+  // When the user will log out
   const setOfflineStatus = useCallback(async () => {
     if (user && authUsername) {
       userCollection()
@@ -113,22 +122,24 @@ function MyApp({ Component, pageProps }: AppProps) {
   }, [authUsername, user]);
 
   useEffect(() => {
+    // Before unload set user's status to offline
     window.addEventListener("beforeunload", async (e) => {
       e.preventDefault();
       e.returnValue = "";
       await setOfflineStatus().then();
     });
-
     return () => {
       setOfflineStatus().then().catch();
     };
   }, [setOfflineStatus]);
 
   useEffect(() => {
+    // After user is loaded
     if (user) {
-      loadingModal.onOpen();
+      // If authenticated user's name has not been set
+      // Then open popup/modal to set the current user's username
+      // Very important
       getUserName().then((r) => {
-        loadingModal.onClose();
         const username = r?.username || "";
         setAuthUsername(username);
         if (!username) {
@@ -141,6 +152,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     }
   }, [checkUsernameExists, getUserName, onOpen, saveUserData, user]);
 
+  // Handle user's username check if
+  // username is still available then save username
   const saveUserName = () => {
     setLoading(true);
     checkUsernameExists(username).then((exists) => {
@@ -165,16 +178,6 @@ function MyApp({ Component, pageProps }: AppProps) {
           {<Component {...pageProps} />}
         </UserDetailsContext.Provider>
       </AuthUserProvider>
-      <Modal onClose={() => {}} size={"full"} isOpen={loadingModal.isOpen}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalBody>
-            <Center height={"100%"} width={"100%"}>
-              <Loader />
-            </Center>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
       <Modal
         isOpen={isOpen}
         onClose={() => {}}
