@@ -206,13 +206,7 @@ export default function Sidebar() {
                 <IoEllipsisVerticalOutline />
               </MenuButton>
               <MenuList>
-                {/*<MenuGroup title="Profile">*/}
-                {/*  <MenuItem>My Account</MenuItem>*/}
-                {/*  <MenuItem>Preferences </MenuItem>*/}
-                {/*</MenuGroup>*/}
-                {/*<MenuDivider />*/}
                 <MenuGroup>
-                  {/*<MenuItem>Settings</MenuItem>*/}
                   <MenuItem onClick={signOut}>Logout</MenuItem>
                 </MenuGroup>
               </MenuList>
