@@ -14,6 +14,12 @@
 
 ## Features ✨
 
+- Instant message
+- Google/Github Authentication
+- Message seen, unread status
+- User online status
+- Unread messages
+
 ## Get Started
 
 First, run the development server:
