@@ -1,16 +1,18 @@
 <div align="center">
-    <img src="https://github.com/khan-asfi-reza/message-grid/blob/main/src/assets/images/LogoText.png" alt="">
+    <img src="https://github.com/khan-asfi-reza/message-grid/blob/main/src/assets/images/logo.svg" alt="">
     <p>
         Firebase NextJs based Chat Application
     </p>
 </div>
 
-## Libraries
+## Libraries 🔖
 
 - NextJS
 - ChakraUI
 - Firebase
 - React Icons
+
+## Features ✨
 
 ## Get Started
 
