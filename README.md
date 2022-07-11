@@ -1,4 +1,5 @@
 <div align="center">
+    <h1> Message Grid </h1>
     <img width="100px" src="https://github.com/khan-asfi-reza/message-grid/blob/main/src/assets/images/logo.svg" alt="">
     <p>
         Firebase NextJs based Chat Application
